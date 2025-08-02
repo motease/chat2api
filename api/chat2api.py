@@ -59,6 +59,7 @@ async def send_conversation(request: Request, credentials: Optional[HTTPAuthoriz
         import os
         req_token = os.getenv('AUTHORIZATION', '').replace(' ', '')
         # req_token = get_req_token("")
+    print("req_token:", req_token)
     try:
         request_data = await request.json()
     except Exception:
