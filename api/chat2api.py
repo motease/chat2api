@@ -1,5 +1,6 @@
 import asyncio
 import types
+from typing import Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Request, HTTPException, Form, Security
@@ -14,6 +15,7 @@ from chatgpt.authorization import refresh_all_tokens
 from utils.Logger import logger
 from utils.configs import api_prefix, scheduled_refresh
 from utils.retry import async_retry
+from chatgpt.authorization import get_req_token
 
 scheduler = AsyncIOScheduler()
 
@@ -50,8 +52,13 @@ async def process(request_data, req_token):
 
 
 @app.post(f"/{api_prefix}/v1/chat/completions" if api_prefix else "/v1/chat/completions")
-async def send_conversation(request: Request, credentials: HTTPAuthorizationCredentials = Security(security_scheme)):
-    req_token = credentials.credentials
+async def send_conversation(request: Request, credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)):
+    req_token = credentials.credentials if credentials else None
+    # print("req_token:", req_token)
+    if not req_token:
+        import os
+        req_token = os.getenv('AUTHORIZATION', '').replace(' ', '')
+        # req_token = get_req_token("")
     try:
         request_data = await request.json()
     except Exception:
