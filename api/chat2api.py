@@ -13,7 +13,7 @@ from app import app, templates, security_scheme
 from chatgpt.ChatService import ChatService
 from chatgpt.authorization import refresh_all_tokens
 from utils.Logger import logger
-from utils.configs import api_prefix, scheduled_refresh
+from utils.configs import api_prefix, scheduled_refresh,authorization
 from utils.retry import async_retry
 from chatgpt.authorization import get_req_token
 
@@ -52,13 +52,10 @@ async def process(request_data, req_token):
 
 
 @app.post(f"/{api_prefix}/v1/chat/completions" if api_prefix else "/v1/chat/completions")
-async def send_conversation(request: Request, credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)):
-    req_token = credentials.credentials if credentials else None
+async def send_conversation(request: Request):
+    # req_token = credentials.credentials if credentials else None
     # print("req_token:", req_token)
-    if not req_token:
-        import os
-        req_token = os.getenv('AUTHORIZATION', '').replace(' ', '')
-        # req_token = get_req_token("")
+    req_token = authorization
     print("req_token:", req_token)
     try:
         request_data = await request.json()
